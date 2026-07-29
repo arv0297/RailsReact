@@ -20,4 +20,5 @@ COPY . .
 RUN gem install rails
 
 EXPOSE 3000
-CMD ["bash"]
+
+CMD ["rails", "server", "-b", "0.0.0.0"]
