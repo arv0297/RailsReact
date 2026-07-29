@@ -12,6 +12,12 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+COPY . .
+
 RUN gem install rails
 
+EXPOSE 3000
 CMD ["bash"]

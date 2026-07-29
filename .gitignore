@@ -1,2 +1,28 @@
 .idea/
 *.iml
+
+#Avoid innecesary files
+/tmp
+/log
+/storage
+/public/uploads
+/public/assets
+/public/packs
+/public/packs-test
+
+/node_modules
+/vendor/bundle
+/.bundle
+
+/coverage/
+/spec/tmp/
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+/config/credentials/*.key
+.env
+.env.*
+!.env.example
+/config/database.yml
+
+/db/seeds.rb
