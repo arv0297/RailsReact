@@ -26,3 +26,5 @@
 /config/database.yml
 
 /db/seeds.rb
+/app/assets/builds/*
+!/app/assets/builds/.keep
