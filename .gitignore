@@ -9,6 +9,7 @@
 /public/assets
 /public/packs
 /public/packs-test
+act-full.log
 
 /node_modules
 /vendor/bundle
