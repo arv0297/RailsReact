@@ -21,6 +21,9 @@ gem "jbuilder"
 # For the use of React
 gem "jsbundling-rails"
 
+# Use of GraphQL for API
+gem 'graphql'
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
@@ -70,3 +73,4 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+gem "graphiql-rails", group: :development
