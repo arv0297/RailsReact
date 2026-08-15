@@ -11,5 +11,24 @@ require 'rails_helper'
 #   end
 # end
 RSpec.describe UsersHelper, type: :helper do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe 'User email plus name in title' do
+    it 'returns an empty string if user is nil' do
+      expect(user_data(nil)).to eq('')
+    end
+
+    it 'returns the user email inside a div with the full name as title' do
+      user = User.new(
+        name: 'John',
+        last_name: 'Doe',
+        second_last_name: 'Smith',
+        email: 'john@example.com'
+      )
+
+      result = helper.user_data(user)
+
+      expect(result).to include('john@example.com')
+      expect(result).to include('title="John Doe Smith"')
+      expect(result).to include('class="user-data"')
+    end
+  end
 end
