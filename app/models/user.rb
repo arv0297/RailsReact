@@ -18,4 +18,8 @@ class User < ApplicationRecord
             length: { in: 2..20, message: "El apellido debe ser de mínimo largo 3" },
             format: { with: VALID_NAME_REGEX, message: "Se permiten solo letras en los apellidos" }
   validates :active, inclusion: { in: [ true, false ] }
+
+  def full_name
+    "#{name} #{last_name} #{second_last_name}"
+  end
 end
