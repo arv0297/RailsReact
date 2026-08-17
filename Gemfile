@@ -22,7 +22,7 @@ gem "jbuilder"
 gem "jsbundling-rails"
 
 # Use of GraphQL for API
-gem 'graphql'
+gem "graphql"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
