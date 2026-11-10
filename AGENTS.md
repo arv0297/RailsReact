@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Project
-- Rails 8.1.3 + Ruby 3.4.10 (`.ruby-version`) app with ERB views, React islands, GraphQL, and PostgreSQL. CI uses Node 20.
+- Rails 8.1.4.1 + Ruby 3.4.10 (`.ruby-version`) app with ERB views, React islands, GraphQL, and PostgreSQL. CI uses Node 20.
 - Application module is `App`; GraphQL schema is `AppSchema` (`app/graphql/app_schema.rb`).
 
 ## Setup and run
@@ -32,6 +32,22 @@
 - `app/models/user.rb` validation messages are Spanish; keep new messages consistent.
 - `db/seeds.rb` is gitignored; do not rely on seeds existing.
 - `config/deploy.yml` / `.kamal` are placeholders (fake IP and localhost registry); do not deploy from them without real config.
+- `image_processing` is 2.x, which no longer pulls `ruby-vips`/`mini_magick` itself. `ruby-vips` is a separate Gemfile entry and Rails 8.1 aborts boot without it (Active Storage's vips transformer). `libvips` must be installed on the system (Docker/CI already have it).
+- The queue DB uses schema files, not migrations: `db/queue_schema.rb`, `db/cache_schema.rb`, `db/cable_schema.rb` (`config.solid_queue.connects_to` in `production.rb`). When upgrading `solid_queue`, copy any new tables/columns from the gem's install template or `solid_queue:update` generator into `db/queue_schema.rb`.
+
+## Dependencies / upgrades
+- `.github/dependabot.yml` groups updates: ONE PR per ecosystem per week (bundler, npm, github-actions). Do not split grouped PRs.
+- When upgrading gems for CI to pass, run the full security suite: `bin/bundler-audit` must report no vulnerabilities (it checks transitive deps like `rails-html-sanitizer`, `nokogiri`, `rack` that Dependabot PRs don't cover).
+- Ruby is not installed on this machine. Validate gem changes in Docker:
+  `docker run --rm -v $PWD:/app -w /app -e BUNDLE_PATH=vendor/bundle -e RAILS_ENV=test -e DATABASE_URL=... ruby:3.4.10-slim bash -lc 'apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev libyaml-dev libvips; gem install bundler -v 2.6.9 && bundle _2.6.9_ install && bundle exec rspec'`
+  (run a `postgres:16` container on a docker network to point `DATABASE_URL` at).
+- Keep `Gemfile.lock`'s `BUNDLED WITH 2.6.9` when regenerating it.
+
+## Documentation rules
+- ALWAYS update `CHANGELOG.md` (record of every change per feature/branch) and this file (`AGENTS.md`) after finishing a task. They grow alongside the project.
+- ONLY skip updating these files if the user explicitly says they just want the task run without documentation updates.
 
 ## Git / CI
 - CI runs on `master`, `develop`, `feature/**`, `release/**`, `hotfix/**`; PRs target `master`/`develop`. Historical hotfix branches are named `hotfix/YYYYMMDDHHMMSS`.
+- Branch flow (ALWAYS follow): new work branches off `develop` as `feature/YYYYMMDDHHMMSS` -> PR into `develop` -> `develop` is merged into `master` only after the feature set is validated. Never keep committing on a feature branch after its PR was merged; start a fresh branch.
+- `master` is the production source. Planned environments: a QA environment (closest to production, running the entire project, not just local) to validate before merging to `master`, then a production environment for deploys.

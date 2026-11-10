@@ -1,12 +1,29 @@
 version: 2
 updates:
+# All gem updates arrive as ONE grouped PR per week instead of one PR per gem.
 - package-ecosystem: bundler
   directory: "/"
   schedule:
     interval: weekly
-  open-pull-requests-limit: 10
+  open-pull-requests-limit: 3
+  groups:
+    ruby-gems:
+      patterns: ["*"]
+# Same for JavaScript dependencies (checked by `npm audit` in CI).
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 3
+  groups:
+    npm-packages:
+      patterns: ["*"]
+# And for GitHub Actions used in the workflows.
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
     interval: weekly
-  open-pull-requests-limit: 10
+  open-pull-requests-limit: 3
+  groups:
+    github-actions:
+      patterns: ["*"]
