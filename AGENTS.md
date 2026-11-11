@@ -18,6 +18,7 @@
 
 ## Tests
 - RSpec is the suite CI actually runs: `bin/rails db:test:prepare && bundle exec rspec`.
+- `bin/ci-local` replicates the full GitHub Actions pipeline locally in Docker with the same commands: jobs `scan_ruby`, `scan_js`, `lint`, `test`, `system-test`. Run all (`bin/ci-local`) or specific ones (`bin/ci-local scan_ruby lint`). Needs only Docker; starts a throwaway `postgres:16`.
 - Single spec: `bundle exec rspec spec/models/user_spec.rb` (append `:LINE` for one example).
 - Every spec needs `require "rails_helper"` and an explicit `type:` (e.g. `:model`, `:request`, `:system`); spec-type inference is disabled.
 - System specs use rack_test by default; tag `js: true` for Selenium headless Chrome. Build JS first and have Chrome available.
@@ -25,6 +26,7 @@
 
 ## Lint / security
 - `bin/rubocop` (rubocop-rails-omakase), `bin/brakeman --no-pager`, `bin/bundler-audit`, `npm audit`.
+- `bin/ci-local` runs all of these exactly as CI does; use it to verify changes before pushing.
 
 ## App-specific
 - GraphQL endpoint: `POST /graphql` -> `GraphqlController#execute`; GraphiQL is development-only at `/graphiql`.
@@ -38,9 +40,7 @@
 ## Dependencies / upgrades
 - `.github/dependabot.yml` groups updates: ONE PR per ecosystem per week (bundler, npm, github-actions). Do not split grouped PRs.
 - When upgrading gems for CI to pass, run the full security suite: `bin/bundler-audit` must report no vulnerabilities (it checks transitive deps like `rails-html-sanitizer`, `nokogiri`, `rack` that Dependabot PRs don't cover).
-- Ruby is not installed on this machine. Validate gem changes in Docker:
-  `docker run --rm -v $PWD:/app -w /app -e BUNDLE_PATH=vendor/bundle -e RAILS_ENV=test -e DATABASE_URL=... ruby:3.4.10-slim bash -lc 'apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev libyaml-dev libvips; gem install bundler -v 2.6.9 && bundle _2.6.9_ install && bundle exec rspec'`
-  (run a `postgres:16` container on a docker network to point `DATABASE_URL` at).
+- Ruby is not installed on this machine. Validate gem changes with `bin/ci-local` (runs the whole CI pipeline in Docker; needs only Docker).
 - Keep `Gemfile.lock`'s `BUNDLED WITH 2.6.9` when regenerating it.
 
 ## Documentation rules

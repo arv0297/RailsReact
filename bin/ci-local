@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Local replica of .github/workflows/ci.yml (same commands, same job names).
+#
+# Usage:
+#   bin/ci-local                 # run all jobs: scan_ruby scan_js lint test system-test
+#   bin/ci-local scan_ruby lint  # run only the given jobs
+#
+# Requires only Docker (Ruby/Node are not installed on the host). A throwaway
+# postgres:16 container is started on a private docker network and removed on exit.
+# Set KEEP=1 to keep the postgres container/network for debugging.
+#
+# Notes:
+# - bundler is pinned to 2.6.9 to match Gemfile.lock's BUNDLED WITH.
+# - system-test currently runs with the rack_test driver because there are no
+#   `js: true` specs; CI installs Chrome but never exercises it. If js specs are
+#   added, install chromium (or Chrome) in that job like CI does.
+
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+RUBY_IMAGE="ruby:3.4.10-slim"
+NODE_IMAGE="node:20-slim"
+BUNDLER_VERSION="2.6.9"
+NETWORK="railsreact-ci"
+PG_CONTAINER="railsreact-ci-pg"
+DATABASE_URL="postgres://postgres:postgres@${PG_CONTAINER}:5432/rails_test"
+APT_PACKAGES="build-essential libpq-dev libyaml-dev pkg-config libvips git"
+
+ruby_setup() {
+  echo "DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ${APT_PACKAGES} >/dev/null && gem install bundler -v ${BUNDLER_VERSION} >/dev/null && bundle _${BUNDLER_VERSION}_ install --quiet"
+}
+
+run_ruby() {
+  docker run --rm --network "$NETWORK" -v "${ROOT}:/app" -w /app \
+    -e BUNDLE_PATH=vendor/bundle -e RAILS_ENV=test -e DATABASE_URL="$DATABASE_URL" \
+    "$RUBY_IMAGE" bash -lc "$1"
+}
+
+run_node() {
+  docker run --rm -v "${ROOT}:/app" -w /app "$NODE_IMAGE" bash -lc "$1"
+}
+
+start_postgres() {
+  if [ "$(docker inspect -f '{{.State.Running}}' "$PG_CONTAINER" 2>/dev/null)" != "true" ]; then
+    docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+    docker run -d --name "$PG_CONTAINER" --network "$NETWORK" \
+      -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:16 >/dev/null
+  fi
+  for _ in $(seq 1 30); do
+    docker exec "$PG_CONTAINER" pg_isready -U postgres >/dev/null 2>&1 && return 0
+    sleep 1
+  done
+  echo "postgres did not become ready" >&2
+  return 1
+}
+
+cleanup() {
+  [ "${KEEP:-0}" = "1" ] && return
+  docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+  docker network rm "$NETWORK" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+job_scan_ruby() {
+  run_ruby "$(ruby_setup) && bin/brakeman --no-pager && bin/bundler-audit"
+}
+
+job_scan_js() {
+  run_node "npm ci --silent >/dev/null && npm audit"
+}
+
+job_lint() {
+  run_ruby "$(ruby_setup) && bin/rubocop"
+}
+
+job_test() {
+  run_node "npm ci --silent >/dev/null && npm run build >/dev/null" &&
+    run_ruby "$(ruby_setup) && bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec"
+}
+
+job_system_test() {
+  run_node "npm ci --silent >/dev/null && npm run build >/dev/null" &&
+    run_ruby "$(ruby_setup) && bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec spec/system"
+}
+
+JOBS=("$@")
+[ ${#JOBS[@]} -eq 0 ] && JOBS=(scan_ruby scan_js lint test system-test)
+
+for job in "${JOBS[@]}"; do
+  if ! declare -f "job_${job//-/_}" >/dev/null; then
+    echo "unknown job: ${job} (valid: scan_ruby scan_js lint test system-test)" >&2
+    exit 2
+  fi
+done
+
+docker network create "$NETWORK" >/dev/null 2>&1 || true
+
+for job in "${JOBS[@]}"; do
+  case "$job" in
+    test|system-test) start_postgres || exit 1; break ;;
+  esac
+done
+
+results=()
+for job in "${JOBS[@]}"; do
+  echo "===== CI job: ${job} ====="
+  if "job_${job//-/_}"; then
+    results+=("PASS  ${job}")
+  else
+    results+=("FAIL  ${job}")
+  fi
+done
+
+echo
+echo "===== Summary ====="
+printf '%s\n' "${results[@]}"
+printf '%s\n' "${results[@]}" | grep -q '^FAIL' && exit 1
+exit 0

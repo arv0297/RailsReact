@@ -72,6 +72,14 @@ instead of one PR per package. Also added the `npm` ecosystem (CI already runs `
 image_processing-2.2.0, pg-1.7.0, rails-8.1.4, selenium-webdriver-4.50.0,
 solid_cable-4.1.0, solid_queue-1.7.0, thruster-0.1.26 + the 5 github_actions branches.
 
+### Added `bin/ci-local` — local replica of the CI pipeline
+Runs the exact commands of `.github/workflows/ci.yml` (jobs `scan_ruby`, `scan_js`, `lint`,
+`test`, `system-test`) in Docker, starting a throwaway `postgres:16` container. Ruby/Node
+are not needed on the host. Usage: `bin/ci-local` (all jobs) or `bin/ci-local scan_ruby lint`
+(specific jobs). Verified on this branch: all 5 jobs PASS — brakeman 0 warnings,
+bundler-audit 0 vulnerabilities, `npm audit` 0 vulnerabilities, rubocop 0 offenses,
+rspec 5/5, system spec 1/1.
+
 ### AGENTS.md created on this branch
 First version of the agent instructions file (setup, tests, lint, app-specific conventions).
 
