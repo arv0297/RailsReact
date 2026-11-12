@@ -6,6 +6,24 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 
 ---
 
+## 2026-11-11 — feature/agent-git-conventions
+
+### Agent workflow, git flow and commit rules (`AGENTS.md`)
+
+- **Environment & known commands:** read the request + business context before acting; use
+  the recorded Docker-based commands (`bin/ci-local`, `node:20` npm audit, `ruby:3.4`
+  bundler-audit) since Ruby/Node/`gh` are not installed on the host.
+- **Git Flow & commit conventions:** `master` (production) + `develop` (QA); type-prefixed
+  branch folders (`feature/`, `release/`, `hotfix/`); short Conventional Commit subjects
+  (≤50 chars) with the full description in the PR body; one logical change per commit/PR.
+- **Merge strategy & rollback:** squash `feature/*` into `develop`, `--no-ff` merges for
+  `release/*`/`hotfix/*` into `master`, tag releases; use `--first-parent` logs and
+  `git revert` for rollbacks.
+- **Commit approval policy:** the agent never commits/pushes/tags/PRs autonomously; it
+  proposes the subject and shows `git status` + `git diff --staged`, then waits for approval.
+
+---
+
 ## 2026-11-10 — feature/20261110185837
 
 (work moved here from feature/20261110181716, which was already merged into develop via PR
