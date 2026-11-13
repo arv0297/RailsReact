@@ -26,8 +26,15 @@ class AppSchema < GraphQL::Schema
   # Limit the size of incoming queries:
   max_query_string_tokens(5000)
 
+  # Limit query depth/complexity to reduce abuse (DoS) risk.
+  max_depth 15
+  max_complexity 300
+
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
+
+  # Disable introspection in production to reduce attack surface.
+  disable_introspection_entry_points if Rails.env.production?
 
   # Relay-style Object Identification:
 

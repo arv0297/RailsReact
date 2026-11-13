@@ -6,6 +6,7 @@
 
 ## Agent workflow & environment (read this first)
 - Before running any command or changing code: re-read the user's request and the relevant business context (model/controller/GraphQL/route/spec) instead of guessing. Then check the command lists below before rediscovering the toolchain — the needed commands are already recorded here to save time and tokens.
+- Security review per change: after any code/config change, identify the parts that could introduce a vulnerability (input handling, auth, CSRF, XSS, SQL, secrets, GraphQL, config) and record them in `SECURITY.md` (per-change log) with what must be tested before the feature ends. Run `bin/brakeman --no-pager`, `bin/bundler-audit`, `npm audit` and `bin/ci-local` and mark the entry `Verified` or `N/A with reason`.
 - Host: Linux + zsh. **Docker is installed.** Ruby, Node/npm and the GitHub CLI (`gh`) are **NOT installed on the host** — do not rely on them directly.
 - Git auth: HTTPS remote with `credential.helper=store` (`~/.git-credentials`), so `git push` and `git push origin --delete <branch>` work without prompting (deleting a Dependabot branch auto-closes its PR).
 - Scratch space: `/tmp/opencode` (pre-approved for work outside the repo).
@@ -38,6 +39,8 @@
 ## Lint / security
 - `bin/rubocop` (rubocop-rails-omakase), `bin/brakeman --no-pager`, `bin/bundler-audit`, `npm audit`.
 - `bin/ci-local` runs all of these exactly as CI does; use it to verify changes before pushing.
+- Security hardening applied (2026-11-12): production TLS/hosts, CSP, GraphQL depth/complexity
+  limits and prod introspection disable, plus `.env.example`. Scans are clean; see CHANGELOG.
 
 ## App-specific
 - GraphQL endpoint: `POST /graphql` -> `GraphqlController#execute`; GraphiQL is development-only at `/graphiql`.
@@ -56,6 +59,8 @@
 
 ## Documentation rules
 - ALWAYS update `CHANGELOG.md` (record of every change per feature/branch) and this file (`AGENTS.md`) after finishing a task. They grow alongside the project.
+- ALWAYS update `SECURITY.md` after finishing a task: append a per-change log entry listing the code areas that could have a vulnerability and what must be tested, then mark it `Verified`/`N/A with reason`.
+- ALWAYS explain every change in the console (what changed and why) and offer the option to revert/erase it before committing; do not assume prior knowledge.
 - ONLY skip updating these files if the user explicitly says they just want the task run without documentation updates.
 
 ## Git Flow & commit conventions
