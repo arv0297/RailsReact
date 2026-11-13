@@ -60,6 +60,7 @@
 ## Documentation rules
 - ALWAYS update `CHANGELOG.md` (record of every change per feature/branch) and this file (`AGENTS.md`) after finishing a task. They grow alongside the project.
 - ALWAYS update `SECURITY.md` after finishing a task: append a per-change log entry listing the code areas that could have a vulnerability and what must be tested, then mark it `Verified`/`N/A with reason`.
+- ALWAYS explain every change in the console (what changed and why) and offer the option to revert/erase it before committing; do not assume prior knowledge.
 - ONLY skip updating these files if the user explicitly says they just want the task run without documentation updates.
 
 ## Git Flow & commit conventions
