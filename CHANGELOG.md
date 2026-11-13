@@ -6,6 +6,23 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 
 ---
 
+## 2026-11-12 — feature/agent-git-conventions (security hardening)
+
+### Configuration security hardening (quick fixes)
+
+- **Scans:** `bundler-audit` (0 vulnerabilities), `npm audit` (0 vulnerabilities) and
+  `brakeman` (0 warnings) all clean on the current lockfiles.
+- **Production TLS/hosts:** enabled `assume_ssl`, `force_ssl` (with `/up` redirect
+  exclusion), DNS-rebinding protection (`config.hosts` from `APP_HOSTS`, default
+  `example.com`) and `host_authorization` in `config/environments/production.rb`.
+- **CSP:** enabled a strict Content-Security-Policy in
+  `config/initializers/content_security_policy.rb` with nonce auto-generation.
+- **GraphQL:** added `max_depth`/`max_complexity` limits and disabled introspection
+  entry points in production in `app/graphql/app_schema.rb`.
+- **Secrets hygiene:** added `.env.example` (strong placeholders); `.env` stays gitignored.
+- **Remaining (not applied):** missing `config/master.key`/`RAILS_MASTER_KEY`,
+  root user in `Dockerfile`, no rate limiting, no auth on GraphQL endpoints.
+
 ## 2026-11-11 — feature/agent-git-conventions
 
 ### Agent workflow, git flow and commit rules (`AGENTS.md`)
