@@ -6,6 +6,20 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 
 ---
 
+## 2026-11-16 — feature/7 (dependency security fixes + parallel CI)
+
+### Dependency security fixes
+
+- Bumped `puma` 8.0.2 -> 8.1.1 and `msgpack` 1.8.4 -> 1.8.7 in `Gemfile.lock`
+  to resolve newly disclosed advisories (CVE-2026-126366, multiple Puma GHSAs).
+
+### Parallel CI runner
+
+- `bin/ci-local` now supports `--parallel`/`-p` to run independent jobs
+  concurrently and a `precommit` shortcut for fast pre-commit checks.
+
+---
+
 ## 2026-11-12 — feature/agent-git-conventions (security hardening)
 
 ### Configuration security hardening (quick fixes)
