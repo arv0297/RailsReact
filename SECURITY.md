@@ -63,6 +63,7 @@ responsibility is on the author (and on agents, per `AGENTS.md`).
 |------|------------------|---------------|-----------------------------------------------|--------|
 | 2026-11-12 | feature/agent-git-conventions (security hardening) | `config/environments/production.rb`, `config/initializers/content_security_policy.rb`, `app/graphql/app_schema.rb`, `.env.example` | TLS/hosts redirect loops, CSP breaking assets/scripts, GraphQL query limits rejecting valid queries, missing env vars | Verified (scans clean; syntax OK) |
 | 2026-11-12 | feature/agent-git-conventions (security log) | `SECURITY.md`, `AGENTS.md` | Documentation only; no runtime impact | Verified |
+| 2026-11-16 | feature/6 (git conventions & production scaffolding) | `.gitmessage`, `scripts/git-hooks/commit-msg`, `bin/setup-git-hooks`, `.github/*`, `CONTRIBUTING.md`, `CODEOWNERS`, `AGENTS.md`, `CHANGELOG.md`, `SECURITY.md` | Docs/config only; no runtime impact; hook/template contain placeholders only, no secrets; tracked hook installed via explicit script | Verified (N/A: no code/config runtime change) |
 
 ### Entry template (copy for new features)
 

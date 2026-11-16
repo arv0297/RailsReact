@@ -64,20 +64,27 @@
 - ONLY skip updating these files if the user explicitly says they just want the task run without documentation updates.
 
 ## Git Flow & commit conventions
-- Use standard Git Flow: `master` (production) + `develop` (integration); change branches are separated by type-prefix folders: `feature/<short-slug>`, `release/<version>`, `hotfix/<version>` (legacy timestamp form `feature|hotfix/YYYYMMDDHHMMSS` is still valid). One change type per branch folder — do not mix features, releases and hotfixes.
+- Branches: `master` (production) + `develop` (integration) only. **No `release/*` branches and no `x.y.z` version branches/numbers** — features are tracked only by ID.
+- Feature branches: `feature/<n>` where `<n>` is the next consecutive integer (highest used + 1). One task per branch.
+- Hotfix branches: `hotfix/<timestamp>` where the timestamp is generated with `date +%d%m%Y%H%M%S` (day month year hour minute second). Hotfixes use timestamps so they never consume a feature number and stay in chronological place.
+- Never merge `master` -> `develop` (avoids knotted history). Only `develop` -> `master` for releases.
 - Keep branch names and commit subjects SHORT and specific to ONE change. Never name a branch/commit after an entire batch or "the whole fix"; put the full explanation in the commit body / PR description.
 - Commit subject: `<type>(<scope>): <short imperative summary>` (Conventional Commits), ≤50 chars, lowercase after the colon, no trailing period.
 - Types: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `build`, `ci`, `chore`, `revert`.
 - One logical change per commit/PR; split refactors, formatting, dependency bumps and behavior changes into separate commits.
 - Keep commit messages SHORT: subject only in most cases. Put the full what/why description in the PR body (PR title = the short Conventional Commit subject). Add a commit body/footer only when needed: `Refs:`/`Closes:` for tickets, `BREAKING CHANGE:` for breaking changes.
+- Commit template: tracked `.gitmessage` (step-by-step guide). Set with `git config commit.template .gitmessage` via `bin/setup-git-hooks`. Tracked hook: `scripts/git-hooks/commit-msg` (install via `bin/setup-git-hooks`).
+- PR descriptions: follow `.github/pull_request_template.md`. Include type, summary, checklist, and `Refs:`/`Closes:` footer.
+- Tracking IDs from the other platform go in the `Refs:` footer and may be added later via the PR body or a follow-up commit (never amend pushed commits).
 
 ## Merge strategy & rollback
-- Enforce the flow on GitHub: default branch = `develop`; protect `develop` and `master` (require PR + CI status + branch up to date; block direct pushes, force-push, deletion); enable auto-delete of head branches. Optional: `git flow` extension so `feature start` always branches from `develop`.
-- Merges: `feature/*` -> `develop` with **squash merge** (PR title = the short Conventional Commit subject, PR body = full description); `release/*` and `hotfix/*` -> `master` with **merge commit `--no-ff`**, then merge `master` back into `develop`. Tag every release (`vX.Y.Z`). Never rebase or force-push `develop`/`master`.
-- Clean history views: `git log --first-parent --oneline develop` (one line per feature = rollback points); `git log --first-parent --oneline master` (releases/hotfixes); `git log --graph --oneline --decorate --all` for the full picture.
-- Rollback: revert a squash commit (`git revert <sha>`) or a merge (`git revert -m 1 <merge-sha>`); prefer deploying the previous tag for releases. Find regressions with `git bisect` / `git log -S`.
+- Enforce the flow on GitHub: default branch = `develop`; protect `develop` and `master` (require PR + CI status + branch up to date; block direct pushes, force-push, deletion); enable auto-delete of head branches. Allow `arv0297` to bypass via the ruleset bypass list.
+- Merges: `feature/*` -> `develop` with **squash merge** (PR title = the short Conventional Commit subject, PR body = full description); hotfixes -> `master` with **merge commit `--no-ff`**, then a single `master` -> `develop` back-merge. No release branches. Never rebase or force-push `develop`/`master`.
+- Clean history views: `git log --first-parent --oneline develop` (one line per feature = rollback points); `git log --first-parent --oneline master` (hotfixes/releases); `git log --graph --oneline --decorate --all` for the full picture.
+- Rollback: revert a squash commit (`git revert <sha>`) or a merge (`git revert -m 1 <merge-sha>`). Find regressions with `git bisect` / `git log -S`.
 
 ## Git / CI
-- CI runs on `master`, `develop`, `feature/**`, `release/**`, `hotfix/**`; PRs target `master`/`develop`. Historical hotfix branches are named `hotfix/YYYYMMDDHHMMSS`.
-- Branch flow (ALWAYS follow): new work branches off `develop` as `feature/<short-slug>` -> PR into `develop` -> `develop` is merged into `master` only after the feature set is validated. Never keep committing on a feature branch after its PR was merged; start a fresh branch.
+- CI runs on `master`, `develop`, `feature/**`, `hotfix/**`; PRs target `master`/`develop`.
+- Branch flow (ALWAYS follow): new work branches off `develop` as `feature/<n>` -> PR into `develop` -> `develop` is merged into `master` only after the feature set is validated. Never keep committing on a feature branch after its PR was merged; start a fresh branch.
 - `master` is the production source. Planned environments: a QA environment (closest to production, running the entire project, not just local) to validate before merging to `master`, then a production environment for deploys.
+- Production-scale conventions (commit/PR/branch) are documented in `CONTRIBUTING.md`, `.github/pull_request_template.md`, and `.github/ISSUE_TEMPLATE/`.

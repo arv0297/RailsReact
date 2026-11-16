@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Install tracked git hooks and set the commit message template.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+# Point git at the tracked template.
+git config commit.template .gitmessage
+
+# Install the commit-msg hook.
+mkdir -p .git/hooks
+cp scripts/git-hooks/commit-msg .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
+
+echo "Git hooks installed. commit.template=.gitmessage"
