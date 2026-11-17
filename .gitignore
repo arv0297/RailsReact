@@ -29,3 +29,6 @@ act-full.log
 /db/seeds.rb
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# CI freshness gate state (local only)
+.ci-last-run

@@ -170,4 +170,7 @@ echo
 echo "===== Summary ====="
 printf '%s\n' "${results[@]}"
 printf '%s\n' "${results[@]}" | grep -q '^FAIL' && exit 1
+
+# Record successful run (epoch + commit) for the pre-push freshness gate.
+printf '%s\n%s\n' "$(date +%s)" "$(git rev-parse HEAD 2>/dev/null)" > .ci-last-run
 exit 0

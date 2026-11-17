@@ -63,7 +63,7 @@ responsibility is on the author (and on agents, per `AGENTS.md`).
 |------|------------------|---------------|-----------------------------------------------|--------|
 | 2026-11-12 | feature/agent-git-conventions (security hardening) | `config/environments/production.rb`, `config/initializers/content_security_policy.rb`, `app/graphql/app_schema.rb`, `.env.example` | TLS/hosts redirect loops, CSP breaking assets/scripts, GraphQL query limits rejecting valid queries, missing env vars | Verified (scans clean; syntax OK) |
 | 2026-11-12 | feature/agent-git-conventions (security log) | `SECURITY.md`, `AGENTS.md` | Documentation only; no runtime impact | Verified |
-| 2026-11-16 | feature/7 (dependency security fixes + parallel CI) | `Gemfile.lock`, `bin/ci-local` | Dependency bumps must not break boot/tests; bundler-audit clean; parallel runner must not race on postgres | Verified (scan_ruby clean; test/system-test pass) |
+| 2026-11-16 | feature/7 (dependency security fixes + parallel CI + freshness gate) | `Gemfile.lock`, `bin/ci-local`, `scripts/git-hooks/pre-push`, `bin/check-ci-fresh`, `.gitignore` | Dependency bumps must not break boot/tests; bundler-audit clean; freshness gate must not block valid pushes; bypass documented | Verified (scan_ruby clean; test/system-test pass; hook tested stale/fresh) |
 
 ### Entry template (copy for new features)
 

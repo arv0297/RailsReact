@@ -18,6 +18,13 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 - `bin/ci-local` now supports `--parallel`/`-p` to run independent jobs
   concurrently and a `precommit` shortcut for fast pre-commit checks.
 
+### CI freshness gate
+
+- `bin/ci-local` records `.ci-last-run` (epoch + commit) on success.
+- `scripts/git-hooks/pre-push` blocks push if CI is older than 5 minutes or
+  the commit changed; bypass with `SKIP_CI_CHECK=1`.
+- `bin/check-ci-fresh` reports freshness status.
+
 ---
 
 ## 2026-11-12 — feature/agent-git-conventions (security hardening)

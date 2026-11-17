@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Block push if CI hasn't run successfully in the last 5 minutes on the
+# current commit. Tracked copy: install with `bin/setup-git-hooks`.
+set -uo pipefail
+
+MAX_AGE=300  # seconds
+
+# Allow explicit bypass for emergencies.
+if [ "${SKIP_CI_CHECK:-0}" = "1" ]; then
+  echo "pre-push: CI freshness check bypassed (SKIP_CI_CHECK=1)."
+  exit 0
+fi
+
+if [ ! -f .ci-last-run ]; then
+  echo "pre-push: no CI run recorded (.ci-last-run missing). Run 'bin/ci-local' first." >&2
+  exit 1
+fi
+
+last_epoch=$(sed -n '1p' .ci-last-run)
+last_sha=$(sed -n '2p' .ci-last-run)
+now=$(date +%s)
+age=$((now - last_epoch))
+head_sha=$(git rev-parse HEAD 2>/dev/null)
+
+if [ "$last_sha" != "$head_sha" ]; then
+  echo "pre-push: code changed since last CI run (recorded $last_sha, HEAD $head_sha). Run 'bin/ci-local' first." >&2
+  exit 1
+fi
+
+if [ "$age" -gt "$MAX_AGE" ]; then
+  echo "pre-push: last CI run was ${age}s ago (> ${MAX_AGE}s). Run 'bin/ci-local' first." >&2
+  exit 1
+fi
+
+echo "pre-push: CI fresh (${age}s ago on ${head_sha:0:7})."
+exit 0
