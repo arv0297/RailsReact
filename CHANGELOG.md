@@ -6,6 +6,21 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 
 ---
 
+## 2026-11-18 — feature/6 (git conventions & production scaffolding)
+
+### Git conventions and production-scale scaffolding
+
+- Established consecutive feature IDs (`feature/<n>`) and timestamped hotfix IDs
+  (`hotfix/<DDMMYYYYHHMMSS>` via `date +%d%m%Y%H%M%S`); no release branches
+  or `x.y.z` versioning.
+- Added tracked commit template `.gitmessage` and tracked hook
+  `scripts/git-hooks/commit-msg` with installer `bin/setup-git-hooks`.
+- Added `.github/pull_request_template.md` and issue templates.
+- Added `CONTRIBUTING.md` and `CODEOWNERS`.
+- Updated `AGENTS.md` Git Flow/commit conventions to the new model.
+
+---
+
 ## 2026-11-16 — feature/7 (dependency security fixes + parallel CI)
 
 ### Dependency security fixes

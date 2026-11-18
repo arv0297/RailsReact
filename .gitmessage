@@ -1,0 +1,46 @@
+# =====================================================================
+# COMMIT MESSAGE TEMPLATE — step-by-step guide (side file)
+# Lines starting with '#' are stripped by git and never committed.
+# Follow the steps below. Edit only the lines WITHOUT a leading '#'.
+# =====================================================================
+#
+# STEP 1 — Choose ONE commit type:
+#   feature | fix | refactor | perf | test | docs | build | ci | chore | revert
+#
+# STEP 2 — Set the scope (optional but recommended): area touched.
+#   Examples: agent, csp, graphql, deps, ci, security, model, view, git
+#
+# STEP 3 — Write the SUBJECT (first non-comment line), <=50 chars
+#   (the trailing branch tag " (<branch>)" is NOT counted):
+#   imperative mood, lowercase after the colon, NO trailing period:
+#     <type>(<scope>): <short imperative summary>
+#
+# STEP 4 — Leave ONE blank line, then an optional BODY (wrap at 72 chars)
+#   explaining WHAT changed and WHY (not how). Add only if needed.
+#
+# STEP 5 — FOOTER (uncomment/add when applicable):
+#   Refs: <TRACKING_ID>          <- filled in LATER from the other platform
+#   Closes: #<issue>              (GitHub issue, if any)
+#   BREAKING CHANGE: <description> (only if the change breaks the contract)
+#
+# STEP 6 — Tracking IDs from the other platform go in the footer (Refs:).
+#   They may be added later via the PR body or a follow-up commit.
+#   NEVER amend already-pushed commits just to add an ID.
+#   Remove any leftover "<TRACKING_ID>" placeholder before committing.
+#
+# =====================================================================
+# WRITE YOUR COMMIT MESSAGE BELOW (keep lines <= 72 chars)
+# =====================================================================
+# The commit MUST end with the branch name in parentheses, e.g.:
+#   feature(git): add commit and pr conventions (feature/6)
+# The branch tag is NOT counted in the 50-char limit.
+
+<type>(<scope>): <summary> (<branch>)
+
+# Body (optional):
+
+
+# Footer (uncomment and fill when applicable):
+# Refs: <TRACKING_ID>
+# Closes: 
+# BREAKING CHANGE: 
