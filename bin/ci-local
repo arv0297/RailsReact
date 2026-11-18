@@ -22,21 +22,31 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-RUBY_IMAGE="ruby:3.4.10-slim"
+RUBY_IMAGE="railsreact-ci-ruby:latest"
 NODE_IMAGE="node:20-slim"
 BUNDLER_VERSION="2.6.9"
 NETWORK="railsreact-ci"
 PG_CONTAINER="railsreact-ci-pg"
 DATABASE_URL="postgres://postgres:postgres@${PG_CONTAINER}:5432/rails_test"
-APT_PACKAGES="build-essential libpq-dev libyaml-dev pkg-config libvips git"
+ADVISORY_VOLUME="railsreact-ci-advisory"
+
+# Build the cached Ruby base image once (reuses Docker layer cache).
+ensure_ruby_image() {
+  if ! docker image inspect "$RUBY_IMAGE" >/dev/null 2>&1; then
+    echo "Building cached Ruby image (one-time, ~2-3 min)..."
+    docker build -f "${ROOT}/Dockerfile.ci" -t "$RUBY_IMAGE" "$ROOT"
+  fi
+}
 
 ruby_setup() {
-  echo "DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ${APT_PACKAGES} >/dev/null && gem install bundler -v ${BUNDLER_VERSION} >/dev/null && bundle _${BUNDLER_VERSION}_ install --quiet"
+  # Gems already installed in the base image; nothing to do.
+  echo ""
 }
 
 run_ruby() {
   docker run --rm --network "$NETWORK" -v "${ROOT}:/app" -w /app \
-    -e BUNDLE_PATH=vendor/bundle -e RAILS_ENV=test -e DATABASE_URL="$DATABASE_URL" \
+    -v "${ADVISORY_VOLUME}:/root/.local/share/ruby-advisory-db" \
+    -e RAILS_ENV=test -e DATABASE_URL="$DATABASE_URL" \
     "$RUBY_IMAGE" bash -lc "$1"
 }
 
@@ -66,7 +76,7 @@ cleanup() {
 trap cleanup EXIT
 
 job_scan_ruby() {
-  run_ruby "$(ruby_setup) && bin/brakeman --no-pager && bin/bundler-audit"
+  run_ruby "bin/brakeman --no-pager && bin/bundler-audit"
 }
 
 job_scan_js() {
@@ -74,17 +84,17 @@ job_scan_js() {
 }
 
 job_lint() {
-  run_ruby "$(ruby_setup) && bin/rubocop"
+  run_ruby "bin/rubocop"
 }
 
 job_test() {
   run_node "npm ci --silent >/dev/null && npm run build >/dev/null" &&
-    run_ruby "$(ruby_setup) && bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec"
+    run_ruby "bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec"
 }
 
 job_system_test() {
   run_node "npm ci --silent >/dev/null && npm run build >/dev/null" &&
-    run_ruby "$(ruby_setup) && bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec spec/system"
+    run_ruby "bin/rails db:test:prepare && bundle _${BUNDLER_VERSION}_ exec rspec spec/system"
 }
 
 # Parse flags.
@@ -108,6 +118,9 @@ for job in "${JOBS[@]}"; do
 done
 
 docker network create "$NETWORK" >/dev/null 2>&1 || true
+
+# Ensure cached Ruby base image exists (builds once).
+ensure_ruby_image
 
 for job in "${JOBS[@]}"; do
   case "$job" in

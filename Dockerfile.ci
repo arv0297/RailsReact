@@ -1,0 +1,19 @@
+# Cached base image for bin/ci-local (Ruby + deps + gems).
+# Build once: docker build -f Dockerfile.ci -t railsreact-ci-ruby .
+# Rebuild automatically handled by bin/ci-local when Gemfile.lock changes.
+FROM ruby:3.4.10-slim
+
+ARG APT_PACKAGES="build-essential libpq-dev libyaml-dev pkg-config libvips git"
+RUN apt-get update -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends ${APT_PACKAGES} \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN gem install bundler -v 2.6.9 --no-document
+
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
+RUN bundle _2.6.9_ install --quiet
+
+# Default bundle path is /usr/local/bundle (image layer), so mounted app
+# code does not shadow installed gems.
+ENV RAILS_ENV=test

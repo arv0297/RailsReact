@@ -18,6 +18,8 @@ Earlier history (before this file existed) is summarized at the bottom from `git
 - Added `.github/pull_request_template.md` and issue templates.
 - Added `CONTRIBUTING.md` and `CODEOWNERS`.
 - Updated `AGENTS.md` Git Flow/commit conventions to the new model.
+- Added cached `Dockerfile.ci` base image and wired `bin/ci-local` to use it
+  (plus advisory-db volume) so CI no longer reinstalls gems/apt on every run.
 
 ---
 
