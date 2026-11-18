@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Report CI freshness status (exit 0 = fresh, 1 = stale).
+set -uo pipefail
+MAX_AGE=300
+if [ ! -f .ci-last-run ]; then
+  echo "stale: no CI run recorded"; exit 1
+fi
+last_epoch=$(sed -n '1p' .ci-last-run)
+last_sha=$(sed -n '2p' .ci-last-run)
+now=$(date +%s)
+age=$((now - last_epoch))
+head_sha=$(git rev-parse HEAD 2>/dev/null)
+if [ "$last_sha" != "$head_sha" ]; then
+  echo "stale: HEAD changed since last run"; exit 1
+fi
+if [ "$age" -gt "$MAX_AGE" ]; then
+  echo "stale: last run ${age}s ago (> ${MAX_AGE}s)"; exit 1
+fi
+echo "fresh: ${age}s ago on ${head_sha:0:7}"
+exit 0
